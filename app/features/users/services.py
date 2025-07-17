@@ -1,6 +1,5 @@
 from typing import Optional
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
 from app.core.security import get_password_hash
 from app.features.users.models import User
@@ -15,10 +14,14 @@ async def get_user_by_email(db: db_dependency, email:str)-> Optional[User]:
 
 async def create_user(db:db_dependency, data:UserCreate) -> User:
     if await get_user_by_email(db, data.email):
-        raise HTTPException(status_code=400, detail="Email đã tồn tại")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email đã tồn tại")
     user = User(
         email = data.email,
         full_name = data.full_name,
         hashed_password = get_password_hash(data.password)
     )
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
+    return user
 

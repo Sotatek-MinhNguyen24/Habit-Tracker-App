@@ -2,9 +2,8 @@ from typing import AsyncGenerator, Annotated
 
 from fastapi.params import Depends
 from sqlalchemy.ext.asyncio import AsyncEngine,AsyncSession,create_async_engine
-
+from contextlib import asynccontextmanager
 from sqlalchemy.orm import sessionmaker, declarative_base
-
 from app.core.config import DATABASE_URL
 
 engine: AsyncEngine = create_async_engine(DATABASE_URL, echo=False, pool_pre_ping=True)
@@ -18,3 +17,9 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
         yield session
 
 db_dependency = Annotated[AsyncSession, Depends(get_db)]
+
+@asynccontextmanager
+async def lifespan(app):
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield

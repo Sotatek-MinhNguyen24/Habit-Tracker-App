@@ -11,10 +11,10 @@ class HabitCreate(HabitBase):
     pass
 
 class HabitUpdate(BaseModel):
-    name:        Optional[str]
-    description: Optional[str]
-    frequency:   Optional[str]
-    active:      Optional[bool]
+    name:        Optional[str] = None
+    description: Optional[str] = None
+    frequency:   Optional[str] = None
+    active:      Optional[bool] = None
 
 class HabitRead(HabitBase):
     id:          int

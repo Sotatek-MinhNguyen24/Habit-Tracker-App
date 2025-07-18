@@ -16,7 +16,7 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
     async with AsyncSessionLocal() as session:
         yield session
 
-db_dependency = Annotated[AsyncSession, Depends(get_db)]
+# db_dependency = Annotated[AsyncSession, Depends(get_db)]
 
 @asynccontextmanager
 async def lifespan(app):

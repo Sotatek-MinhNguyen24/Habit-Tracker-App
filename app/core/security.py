@@ -1,4 +1,6 @@
 from datetime import datetime, timedelta, timezone
+from typing import Optional
+
 import jwt
 from passlib.context import CryptContext
 from fastapi import HTTPException, status
@@ -17,11 +19,13 @@ def create_token(subject: str, expires_delta: timedelta) -> str:
     payload = {"sub": subject, "exp": datetime.now(timezone.utc) + expires_delta}
     return jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
 
-def create_access_token(subject: str) -> str:
-    return create_token(subject, timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+def create_access_token(subject: str, expires_delta: Optional[timedelta] = None) -> str:
+    delta = expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    return create_token(subject, delta)
 
-def create_refresh_token(subject: str) -> str:
-    return create_token(subject, timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS))
+def create_refresh_token(subject: str, expires_delta: Optional[timedelta] = None) -> str:
+    delta = expires_delta or timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+    return create_token(subject, delta)
 
 def decode_token(token: str) -> dict:
     try:

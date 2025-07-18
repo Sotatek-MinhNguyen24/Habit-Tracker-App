@@ -14,7 +14,7 @@ async def list_habits(db: AsyncSession, owner_id: int) -> List[Habit]:
 async def create_habit(
     db: AsyncSession, owner_id: int, data: HabitCreate
 ) -> Habit:
-    habit = Habit(**data.dict(), owner_id=owner_id)
+    habit = Habit(**data.model_dump(), owner_id=owner_id)
     db.add(habit)
     await db.commit()
     await db.refresh(habit)

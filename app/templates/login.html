@@ -1,10 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "base.html" %}
+{% block title %}Đăng nhập{% endblock %}
+{% block content %}
+<h2>Đăng nhập</h2>
+<form method="post" action="/auth/login">
+  <div class="form-group">
+    <label for="username">Email</label>
+    <input id="username" name="username" type="text" required>
+  </div>
+  <div class="form-group">
+    <label for="password">Mật khẩu</label>
+    <input id="password" name="password" type="password" required>
+  </div>
+  <button class="btn" type="submit">Login</button>
+</form>
+<a class="link" href="/auth/forgot-password">Quên mật khẩu?</a>
+<a class="link" href="/users/register">Đăng ký</a>
+{% endblock %}

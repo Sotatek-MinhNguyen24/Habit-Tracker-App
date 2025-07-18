@@ -1,10 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "base.html" %}
+{% block title %}Chỉnh sửa Habit{% endblock %}
+{% block content %}
+  <h2>Chỉnh sửa Habit</h2>
+  <form method="post" action="/habits/{{ habit.id }}/edit">
+    <div class="form-group">
+      <label for="name">Tên habit</label>
+      <input id="name" name="name" type="text" value="{{ habit.name }}" required>
+    </div>
+    <div class="form-group">
+      <label for="description">Mô tả</label>
+      <input id="description" name="description" type="text" value="{{ habit.description }}">
+    </div>
+    <div class="form-group">
+      <label for="frequency">Tần suất</label>
+      <select id="frequency" name="frequency">
+        <option value="daily"   {% if habit.frequency=="daily"   %}selected{% endif %}>Hàng ngày</option>
+        <option value="weekly"  {% if habit.frequency=="weekly"  %}selected{% endif %}>Hàng tuần</option>
+        <option value="monthly" {% if habit.frequency=="monthly" %}selected{% endif %}>Hàng tháng</option>
+      </select>
+    </div>
+    <button class="btn" type="submit">Cập nhật</button>
+  </form>
+{% endblock %}

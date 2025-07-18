@@ -1,10 +1,65 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "base.html" %}
+{% block title %}My Habits{% endblock %}
+{% block content %}
+<h2>Habit Tracker</h2>
+  <div style="display:flex; justify-content: flex-end; margin-bottom: 1rem;">
+    <a href="/users/change-password" class="btn btn-sm" style="margin-right: .5rem; text-decoration: none;">
+      Đổi mật khẩu
+    </a>
+    <a href="/auth/logout" class="btn btn-sm btn-delete" style="text-decoration: none;">
+      Logout
+    </a>
+  </div>
+<form method="post" action="/habits">
+  <div class="form-group">
+    <label for="name">Tên habit</label>
+    <input id="name" name="name" placeholder="Ví dụ: Uống nước" required>
+  </div>
+  <div class="form-group">
+    <label for="description">Mô tả</label>
+    <input id="description" name="description" placeholder="(tùy chọn)">
+  </div>
+  <div class="form-group">
+    <label for="frequency">Tần suất</label>
+    <select id="frequency" name="frequency">
+      <option value="daily">Hàng ngày</option>
+      <option value="weekly">Hàng tuần</option>
+      <option value="monthly">Hàng tháng</option>
+    </select>
+  </div>
+  <button class="btn" type="submit">Add Habit</button>
+</form>
+
+{% if habits %}
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Frequency</th>
+        <th>Active</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for h in habits %}
+      <tr>
+        <td>{{ h.name }}</td>
+        <td>{{ h.frequency }}</td>
+        <td>{{ "Yes" if h.active else "No" }}</td>
+        <td>
+          <a href="/habits/{{ h.id }}/edit" class="btn btn-sm btn-edit">Edit</a>
+          <form method="post" action="/habits/{{ h.id }}/toggle" style="display:inline;">
+            <button class="btn btn-sm btn-toggle" type="submit">Toggle</button>
+          </form>
+          <form method="post" action="/habits/{{ h.id }}/delete" style="display:inline;">
+            <button class="btn btn-sm btn-delete" type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p>Chưa có habit nào. Hãy thêm ngay!</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,21 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: "postgresql+asyncpg://postgres:123@db:5432/HabitTrackerDatabase"
+
+  db:
+    image: postgres:17
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_DB: HabitTrackerDatabase
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+
+volumes:
+  postgres_data:

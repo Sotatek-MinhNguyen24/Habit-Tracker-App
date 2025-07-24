@@ -8,9 +8,7 @@ from app.core.security import create_access_token, decode_token
 from app.features.users.models import User
 from app.features.users.services import set_user_password
 
-async def generate_reset_token(
-    db: AsyncSession, email: str
-) -> str:
+async def generate_reset_token(db: AsyncSession, email: str) -> str:
     res = await db.execute(select(User).where(User.email == email))
     user = res.scalars().first()
     if not user:
@@ -19,14 +17,22 @@ async def generate_reset_token(
             detail="Nếu email tồn tại, bạn sẽ nhận được link"
         )
 
-    return create_access_token(
-        subject=str(user.id),
-        expires_delta=timedelta(hours=RESET_PASSWORD_TOKEN_EXPIRE_HOURS),
+    payload = {"sub": str(user.id)}
+    expires = timedelta(hours=RESET_PASSWORD_TOKEN_EXPIRE_HOURS)
+    token = create_access_token(
+        data=payload,
+        expires_delta=expires
     )
+    return token
 
-async def reset_password(db: AsyncSession, token: str, new_password: str) -> None:
-    payload = decode_token(token)
+async def reset_password(db: AsyncSession,token: str,new_password: str) -> None:
+    try:
+        payload = decode_token(token)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Token không hợp lệ hoặc đã hết hạn")
+
     uid = payload.get("sub")
     if not uid:
         raise HTTPException(status_code=400, detail="Token không hợp lệ")
+
     await set_user_password(db, int(uid), new_password)

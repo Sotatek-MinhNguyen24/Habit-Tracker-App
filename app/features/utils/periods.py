@@ -1,6 +1,5 @@
 # Xac dinh danh sach ngay/thang can hien thi theo thoi gian hien tai:
 from datetime import date, timedelta
-import calendar
 
 YEARS_COUNT = 5
 

@@ -19,16 +19,11 @@ def get_current_user_id(request: Request) -> int:
 
 @router.get("/register")
 async def register_page(request: Request):
-    return templates.TemplateResponse("register.html", {"request": request})
+    return templates.TemplateResponse("register.html", {"request": request, "show_nav":False})
 
 @router.post("/register")
-async def register_submit(
-    request: Request,
-    email: str = Form(...),
-    full_name: str = Form(...),
-    password: str = Form(...),
-    db: AsyncSession = Depends(get_db),
-):
+async def register_submit(request: Request,email: str = Form(...),full_name: str = Form(...),password: str = Form(...),
+                          db: AsyncSession = Depends(get_db),):
     await create_user(db, UserCreate(
         email=email, full_name=full_name, password=password
     ))
@@ -36,11 +31,10 @@ async def register_submit(
 
 @router.get("/change-password")
 async def change_password_page(request: Request):
-    return templates.TemplateResponse("change_password.html", {"request": request})
+    return templates.TemplateResponse("change_password.html", {"request": request, "show_nav": False})
 
 @router.post("/change-password")
-async def change_password_submit(
-    request: Request,
+async def change_password_submit(request: Request,
     old_password: str        = Form(...),
     new_password: str        = Form(...),
     confirm_password: str    = Form(...),

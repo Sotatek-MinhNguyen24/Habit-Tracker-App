@@ -1,8 +1,7 @@
 from typing import List
 from datetime import date
 from fastapi import HTTPException, status
-from sqlalchemy import select, delete, func
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.features.habits.models import Habit, HabitLog
@@ -13,21 +12,18 @@ async def list_habits(db: AsyncSession, owner_id: int) -> List[Habit]:
     res = await db.execute(select(Habit).where(Habit.owner_id == owner_id))
     return res.scalars().all()
 
-async def create_habit(
-    db: AsyncSession, owner_id: int, data: HabitCreate
-) -> Habit:
+
+async def create_habit(db: AsyncSession, owner_id: int, data: HabitCreate) -> Habit:
     habit = Habit(**data.model_dump(), owner_id=owner_id)
     db.add(habit)
     await db.commit()
     await db.refresh(habit)
     return habit
 
-async def toggle_habit(
-    db: AsyncSession, habit_id: int, owner_id: int
-) -> Habit:
+
+async def toggle_habit(db: AsyncSession, habit_id: int, owner_id: int) -> Habit:
     res = await db.execute(
-        select(Habit).where(Habit.id==habit_id, Habit.owner_id==owner_id)
-    )
+        select(Habit).where(Habit.id == habit_id, Habit.owner_id == owner_id))
     habit = res.scalars().first()
     if not habit:
         raise HTTPException(
@@ -40,12 +36,10 @@ async def toggle_habit(
     await db.refresh(habit)
     return habit
 
-async def delete_habit(
-    db: AsyncSession, habit_id: int, owner_id: int
-) -> None:
+
+async def delete_habit(db: AsyncSession, habit_id: int, owner_id: int) -> None:
     res = await db.execute(
-        select(Habit).where(Habit.id==habit_id, Habit.owner_id==owner_id)
-    )
+        select(Habit).where(Habit.id == habit_id, Habit.owner_id == owner_id))
     habit = res.scalars().first()
     if not habit:
         raise HTTPException(
@@ -55,6 +49,7 @@ async def delete_habit(
     await db.delete(habit)
     await db.commit()
 
+
 async def update_habit(db: AsyncSession, habit: Habit, data: HabitUpdate) -> Habit:
     for field, value in data.model_dump(exclude_unset=True).items():
         setattr(habit, field, value)
@@ -63,8 +58,9 @@ async def update_habit(db: AsyncSession, habit: Habit, data: HabitUpdate) -> Hab
     await db.refresh(habit)
     return habit
 
+
 # Hàm bật/tắt trạng thái tick, stmt :statement
-async def toggle_habit_log(db: AsyncSession, habit_id:int, on_date: date):
+async def toggle_habit_log(db: AsyncSession, habit_id: int, on_date: date):
     stmt = select(HabitLog).where(HabitLog.habit_id == habit_id, HabitLog.timestamp == on_date)
     res = await db.execute(stmt)
     log = res.scalars().first()
@@ -75,4 +71,3 @@ async def toggle_habit_log(db: AsyncSession, habit_id:int, on_date: date):
         db.add(HabitLog(habit_id=habit_id, timestamp=on_date))
 
     await db.commit()
-

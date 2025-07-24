@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Admin – Habit Management{% endblock %}
+
+{% block content %}
+  <h2 class="title">Habit Management</h2>
+
+  <table class="sheet">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Owner ID</th>
+        <th>Name</th>
+        <th>Frequency</th>
+        <th>Active</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for habit in habits %}
+        <tr>
+          <td>{{ habit.id }}</td>
+          <td>{{ habit.owner_id }}</td>
+          <td>{{ habit.name }}</td>
+          <td>{{ habit.frequency }}</td>
+          <td>{{ "Yes" if habit.active else "No" }}</td>
+          <td>
+            <form
+              method="post"
+              action="{{ request.url_for('admin_delete_habits', habit_id=habit.id) }}"
+              class="inline-form"
+            >
+              <button class="btn-sm btn-delete" type="submit">
+                Delete
+              </button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      {% if habits|length == 0 %}
+        <tr>
+          <td colspan="6" class="no-data">No habits found.</td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+{% endblock %}

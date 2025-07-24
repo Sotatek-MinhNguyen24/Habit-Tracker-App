@@ -1,58 +1,73 @@
-from typing import Optional
+from typing import Optional, Dict, Any
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.database import get_db
-from app.core.security import (
-    verify_password,
-    create_access_token,
-    create_refresh_token,
-    decode_token,
-)
+from app.core.security import verify_password,create_access_token,create_refresh_token,decode_token
+
 from app.features.users.models import User
 from app.features.auth.schemas import RefreshTokenRequest
 
 
-async def authenticate_user(
-        db: AsyncSession, email: str, password: str
-) -> Optional[User]:
-    res = await db.execute(select(User).where(User.email == email))
-    user = res.scalars().first()
+async def authenticate_user(db: AsyncSession,email: str,password: str) -> Optional[User]:
+
+    result = await db.execute(select(User).where(User.email == email))
+    user = result.scalars().first()
     if not user or not verify_password(password, user.hashed_password):
         return None
     return user
 
 
-async def login_for_tokens(
-        form_data: OAuth2PasswordRequestForm = Depends(),
-        db: AsyncSession = Depends(get_db),
-) -> dict:
+async def login_for_tokens(form_data: OAuth2PasswordRequestForm = Depends(),
+                           db: AsyncSession = Depends(get_db),) -> Dict[str, Any]:
+
     user = await authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Sai email hoặc mật khẩu",
         )
+
+    payload: Dict[str, Any] = {
+        "sub": str(user.id),
+        "role": user.role.value,
+    }
+
+    access_token = create_access_token(payload)
+    refresh_token = create_refresh_token(payload)
+
     return {
-        "access_token": create_access_token(str(user.id)),
-        "refresh_token": create_refresh_token(str(user.id)),
-        "token_type": "bearer",
+        "access_token":  access_token,
+        "refresh_token": refresh_token,
+        "token_type":    "bearer",
+        "payload":       payload,
     }
 
 
-async def refresh_tokens(
-        body: RefreshTokenRequest,
-) -> dict:
-    payload = decode_token(body.refresh_token)
-    uid = payload.get("sub")
-    if not uid:
+async def refresh_tokens(body: RefreshTokenRequest,) -> Dict[str, Any]:
+
+    token_payload = decode_token(body.refresh_token)
+    user_id = token_payload.get("sub")
+    role    = token_payload.get("role")
+    if not user_id or not role:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Refresh token không hợp lệ",
         )
+
+    new_payload: Dict[str, Any] = {
+        "sub":  user_id,
+        "role": role,
+    }
+    access_token = create_access_token(new_payload)
+    refresh_token = create_refresh_token(new_payload)
+
     return {
-        "access_token": create_access_token(uid),
-        "refresh_token": create_refresh_token(uid),
-        "token_type": "bearer",
+        "access_token":  access_token,
+        "refresh_token": refresh_token,
+        "token_type":    "bearer",
+        "payload":       new_payload,
     }

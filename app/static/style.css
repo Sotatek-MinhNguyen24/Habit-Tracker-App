@@ -314,3 +314,36 @@ main {
 .sheet td:not(:first-child) {
   padding: 0.6rem 0.5rem;
 }
+
+
+/* -----------------------------------
+   NAVBAR (TOP MENU)
+----------------------------------- */
+.navbar {
+  background: #fff;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 0.8rem 1.5rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.03);
+}
+
+.navbar ul {
+  display: flex;
+  list-style: none;
+  gap: 1.5rem;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.navbar li a {
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: #4e54c8;
+  padding: 0.3rem 0.6rem;
+  transition: background 0.2s, color 0.2s;
+  border-radius: 6px;
+}
+
+.navbar li a:hover {
+  background: #f0f0ff;
+  color: #2c2e92;
+}

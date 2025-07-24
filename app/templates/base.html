@@ -7,6 +7,26 @@
   <title>{% block title %}Habit Tracker{% endblock %}</title>
 </head>
 <body>
+  {% if show_nav|default(true) %}
+  <nav class="navbar">
+    <ul>
+      {% if current_user %}
+        {% if current_user.role != 'admin' %}
+          <li><a href="/habits">My Habits</a></li>
+        {% endif %}
+        {% if current_user.role == 'admin' %}
+          <li><a href="{{ request.url_for('admin_list_users') }}">User Management</a></li>
+          <li><a href="{{ request.url_for('admin_list_habits') }}">Habit Management</a></li>
+        {% endif %}
+        <li><a href="/users/change-password">Đổi mật khẩu</a></li>
+        <li><a href="/auth/logout">Logout</a></li>
+      {% else %}
+        <li><a href="/auth/login">Login</a></li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+
   <div class="container">
     <div class="card">
       {% block content %}{% endblock %}

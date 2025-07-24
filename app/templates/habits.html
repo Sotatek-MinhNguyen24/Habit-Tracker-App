@@ -3,33 +3,30 @@
 {% block content %}
 
   <h2 class="title">Habit Tracker</h2>
-  <div class="toolbar">
-    <a href="/users/change-password" class="btn-sm btn">Đổi mật khẩu</a>
-    <a href="/auth/logout" class="btn-sm btn-delete">Logout</a>
-  </div>
 
-  <!-- Form thêm mới -->
-  <form method="post" action="{{ request.url_for('add_habit_route') }}" class="form">
-    <div class="form-group">
-      <label for="name">Tên habit</label>
-      <input id="name" name="name" placeholder="Ví dụ: Uống nước" required />
-    </div>
-    <div class="form-group">
-      <label for="description">Mô tả</label>
-      <input id="description" name="description" placeholder="(tùy chọn)" />
-    </div>
-    <div class="form-group">
-      <label for="frequency">Tần suất</label>
-      <select id="frequency" name="frequency">
-        <option value="daily">Hàng ngày</option>
-        <option value="monthly">Hàng tháng</option>
-        <option value="yearly">Hàng năm</option>
-      </select>
-    </div>
-    <button class="btn" type="submit">Add Habit</button>
-  </form>
+  {% if current_user.role != 'admin' %}
+    <form method="post" action="{{ request.url_for('add_habit_route') }}" class="form">
+      <div class="form-group">
+        <label for="name">Tên habit</label>
+        <input id="name" name="name" placeholder="Ví dụ: Uống nước" required />
+      </div>
+      <div class="form-group">
+        <label for="description">Mô tả</label>
+        <input id="description" name="description" placeholder="(tùy chọn)" />
+      </div>
+      <div class="form-group">
+        <label for="frequency">Tần suất</label>
+        <select id="frequency" name="frequency">
+          <option value="daily">Hàng ngày</option>
+          <option value="monthly">Hàng tháng</option>
+          <option value="yearly">Hàng năm</option>
+        </select>
+      </div>
+      <button class="btn" type="submit">Add Habit</button>
+    </form>
+  {% endif %}
 
-<!-- BẢNG DAILY -->
+  {# BẢNG DAILY #}
   {% if daily_habits %}
     <h3>Hàng ngày</h3>
     <table class="sheet">
@@ -59,13 +56,15 @@
               </td>
             {% endfor %}
             <td class="actions">
-              <a href="{{ request.url_for('edit_habit_page', habit_id=ctx.habit.id) }}"
-                 class="btn-edit btn-sm">Edit</a>
-              <form method="post"
-                    action="{{ request.url_for('delete_route', habit_id=ctx.habit.id) }}"
-                    class="inline-form">
-                <button class="btn-sm btn-delete" type="submit">Delete</button>
-              </form>
+              {% if current_user.role == 'admin' or current_user.id == ctx.habit.owner_id %}
+                <a href="{{ request.url_for('edit_habit_page', habit_id=ctx.habit.id) }}"
+                   class="btn-edit btn-sm">Edit</a>
+                <form method="post"
+                      action="{{ request.url_for('delete_route', habit_id=ctx.habit.id) }}"
+                      class="inline-form">
+                  <button class="btn-sm btn-delete" type="submit">Delete</button>
+                </form>
+              {% endif %}
             </td>
           </tr>
         {% endfor %}
@@ -73,7 +72,7 @@
     </table>
   {% endif %}
 
-  <!-- BẢNG MONTHLY -->
+  {# BẢNG MONTHLY #}
   {% if monthly_habits %}
     <h3>Hàng tháng</h3>
     <table class="sheet">
@@ -102,14 +101,16 @@
                 </form>
               </td>
             {% endfor %}
-             <td class="actions">
-              <a href="{{ request.url_for('edit_habit_page', habit_id=ctx.habit.id) }}"
-                 class="btn-edit btn-sm">Edit</a>
-              <form method="post"
-                    action="{{ request.url_for('delete_route', habit_id=ctx.habit.id) }}"
-                    class="inline-form">
-                <button class="btn-sm btn-delete" type="submit">Delete</button>
-              </form>
+            <td class="actions">
+              {% if current_user.role == 'admin' or current_user.id == ctx.habit.owner_id %}
+                <a href="{{ request.url_for('edit_habit_page', habit_id=ctx.habit.id) }}"
+                   class="btn-edit btn-sm">Edit</a>
+                <form method="post"
+                      action="{{ request.url_for('delete_route', habit_id=ctx.habit.id) }}"
+                      class="inline-form">
+                  <button class="btn-sm btn-delete" type="submit">Delete</button>
+                </form>
+              {% endif %}
             </td>
           </tr>
         {% endfor %}
@@ -117,7 +118,7 @@
     </table>
   {% endif %}
 
-  <!-- BẢNG YEARLY -->
+  {# BẢNG YEARLY #}
   {% if yearly_habits %}
     <h3>Hàng năm</h3>
     <table class="sheet">
@@ -146,14 +147,16 @@
                 </form>
               </td>
             {% endfor %}
-             <td class="actions">
-              <a href="{{ request.url_for('edit_habit_page', habit_id=ctx.habit.id) }}"
-                 class="btn-edit btn-sm">Edit</a>
-              <form method="post"
-                    action="{{ request.url_for('delete_route', habit_id=ctx.habit.id) }}"
-                    class="inline-form">
-                <button class="btn-sm btn-delete" type="submit">Delete</button>
-              </form>
+            <td class="actions">
+              {% if current_user.role == 'admin' or current_user.id == ctx.habit.owner_id %}
+                <a href="{{ request.url_for('edit_habit_page', habit_id=ctx.habit.id) }}"
+                   class="btn-edit btn-sm">Edit</a>
+                <form method="post"
+                      action="{{ request.url_for('delete_route', habit_id=ctx.habit.id) }}"
+                      class="inline-form">
+                  <button class="btn-sm btn-delete" type="submit">Delete</button>
+                </form>
+              {% endif %}
             </td>
           </tr>
         {% endfor %}

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Admin – User Management{% endblock %}
+
+{% block content %}
+  <h2 class="title">User Management</h2>
+
+  <table class="sheet">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Active</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+        <tr>
+          <td>{{ user.id }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.role.value }}</td>
+          <td>{{ "Yes" if user.is_active else "No" }}</td>
+          <td>
+            {% if user.id != current_user.id %}
+              <form 
+                method="post"
+                action="{{ request.url_for('admin_toggle_user_role', user_id=user.id) }}"
+                class="inline-form"
+              >
+                {% if user.role == 'admin' %}
+                  <button class="btn-sm btn-delete" type="submit">
+                    Demote to User
+                  </button>
+                {% else %}
+                  <button class="btn-sm btn" type="submit">
+                    Change Role
+                  </button>
+                {% endif %}
+              </form>
+            {% else %}
+              <span class="note">—</span>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
+```

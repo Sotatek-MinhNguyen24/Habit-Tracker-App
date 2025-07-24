@@ -1,10 +1,8 @@
-from fastapi import APIRouter, Depends, Request, Form, status
-
-from fastapi.responses import RedirectResponse
+from fastapi import APIRouter, Depends, Request, status
+from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
-from starlette.responses import HTMLResponse
 
 from app.core.database import get_db
 from app.features.auth.schemas import Token, RefreshTokenRequest
@@ -14,32 +12,47 @@ templates = Jinja2Templates(directory="app/templates")
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-@router.get("/login")
-async def login_page(request: Request) -> HTMLResponse:
-    return templates.TemplateResponse("login.html", {"request": request})
+@router.get("/login", response_class=HTMLResponse)
+async def login_page(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request, "show_nav":False})
 
 
 @router.post("/login")
-async def login_submit(form_data: OAuth2PasswordRequestForm = Depends(),db: AsyncSession = Depends(get_db),) -> dict:
+async def login_submit(
+        form_data: OAuth2PasswordRequestForm = Depends(),
+        db: AsyncSession = Depends(get_db),
+):
     tokens = await login_for_tokens(form_data, db)
-    resp = RedirectResponse(url="/habits", status_code=status.HTTP_302_FOUND)
-    resp.set_cookie("access_token", tokens["access_token"], httponly=True)
-    return resp
+    access_token = tokens["access_token"]
+    refresh_token = tokens["refresh_token"]
+    payload = tokens.get("payload", {})
+
+    role = payload.get("role")
+    redirect_to = "/admin/habits" if role == "admin" else "/habits"
+    response = RedirectResponse(url=redirect_to, status_code=status.HTTP_302_FOUND)
+    response.set_cookie(key="access_token", value=access_token, httponly=True, secure=True, samesite="lax")
+    response.set_cookie(key="refresh_token", value=refresh_token, secure=True, samesite="lax")
+    response.set_cookie(key="user_role",value=payload.get("role", ""),secure=True,samesite="lax")
+    return response
 
 
 @router.post("/token", response_model=Token)
-async def token_api(db: AsyncSession = Depends(get_db),
-                    form_data: OAuth2PasswordRequestForm = Depends(),
-                    ):
-    return await login_for_tokens(db, form_data)
+async def token_api(
+        form_data: OAuth2PasswordRequestForm = Depends(),
+        db: AsyncSession = Depends(get_db),
+):
+    return await login_for_tokens(form_data, db)
 
 
 @router.post("/refresh", response_model=Token)
 async def refresh_api(body: RefreshTokenRequest):
     return await refresh_tokens(body)
 
+
 @router.get("/logout")
-async def logout(request: Request):
-    response = RedirectResponse(url="/auth/login", status_code=status.HTTP_302_FOUND)
+async def logout():
+    response = RedirectResponse(url="/auth/login",status_code=status.HTTP_302_FOUND)
     response.delete_cookie("access_token")
+    response.delete_cookie("refresh_token")
+    response.delete_cookie("user_role")
     return response

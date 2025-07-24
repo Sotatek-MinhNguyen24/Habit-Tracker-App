@@ -11,6 +11,7 @@ body {
   font-family: "Segoe UI", Roboto, sans-serif;
   background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
   min-height: 100vh;
+  color: #333;
 }
 
 a {
@@ -31,13 +32,13 @@ main {
 
 .container {
   width: 100%;
-  max-width: 800px;
+  max-width: 1200px;    /* Mở rộng từ 800px lên 960px */
   margin: auto;
   padding: 1rem;
 }
 
 .card {
-  background: #ffffff;
+  background: #fff;
   border-radius: 12px;
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
   padding: 2rem;
@@ -50,7 +51,6 @@ main {
 .title {
   font-size: 1.8rem;
   font-weight: 600;
-  color: #333;
   text-align: center;
   margin-bottom: 2rem;
 }
@@ -93,7 +93,6 @@ main {
   width: 100%;
   padding: 0.75rem 1rem;
   font-size: 1rem;
-  color: #333;
   border: 1px solid #ddd;
   border-radius: 8px;
   background: #f9f9f9;
@@ -136,15 +135,23 @@ main {
 
 .btn-delete {
   background: #e53e3e;
+  color: #fff;
 }
 
 .btn-toggle {
   background: #f6ad55;
+  color: #fff;
 }
 
 .btn-edit {
-  background: #4e54c8;
+  background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
   color: #fff;
+  font-size: 0.85rem;
+  padding: 0.4rem 0.8rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: opacity 0.2s;
 }
 
 .btn-edit:hover {
@@ -193,16 +200,6 @@ main {
   font-weight: 500;
 }
 
-.actions {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.inline-form {
-  display: inline;
-}
-
 /* -----------------------------------
    TOOLBAR (HABITS PAGE)
 ----------------------------------- */
@@ -213,21 +210,107 @@ main {
   margin-bottom: 1.25rem;
 }
 
-/* -----------------------------------
-   TOP NAV (LOGIN STATE)
------------------------------------ */
-.top-nav {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  display: flex;
-  gap: 0.5rem;
+/* Đồng nhất nút Logout giống Đổi mật khẩu */
+.toolbar .btn-delete {
+  background: linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%);
+  color: #fff;
 }
 
-.top-nav a {
-  padding: 0.4rem 0.8rem;
-  background: #e53e3e;
-  color: #fff;
-  border-radius: 6px;
+/* -----------------------------------
+   SHEET TABLES (Checklist)
+----------------------------------- */
+/* Cho phép scroll ngang */
+.sheet-container {
+  overflow-x: auto;
+  margin-top: 1.5rem;
+}
+
+.sheet {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;  /* Cố định cột */
+  min-width: 700px;
+}
+
+.sheet th,
+.sheet td {
+  border: 1px solid #eee;
+  padding: 1rem 0.75rem; /* Tăng padding để khỏi che nút */
+  text-align: center;
   font-size: 0.85rem;
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sheet thead th {
+  background: #f1f1f1;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+}
+
+.sheet tbody tr:nth-child(even) {
+  background: #fafafa;
+}
+
+.sheet tbody tr:hover {
+  background: #f5f5f5;
+}
+
+/* Checkbox */
+.sheet input[type="checkbox"] {
+  width: 1.2rem;
+  height: 1.2rem;
+  cursor: pointer;
+  accent-color: #4e54c8;
+  margin: 0 auto;
+  display: block;
+}
+
+/* Cột Actions cố định bên phải */
+.sheet th:last-child,
+.sheet td:last-child {
+  width: 8rem;        /* Chiều rộng cố định */
+  max-width: 8rem;
+  text-align: center;
+}
+
+.sheet td .actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Nút trong Actions */
+.sheet td .actions a,
+.sheet td .actions button {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.8rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+/* -----------------------------------
+   CHO CỘT HABIT CO GIÃN THEO NỘI DUNG
+----------------------------------- */
+.sheet {
+  table-layout: fixed;  /* Cột khác dùng width cố định */
+}
+
+.sheet th:first-child,
+.sheet td:first-child {
+  width: auto;          /* Linh hoạt */
+  white-space: normal;  /* Cho phép xuống dòng */
+  word-wrap: break-word;
+  text-align: left;
+  padding: 1rem;        /* Padding rộng để đọc thoải mái */
+}
+
+/* Giảm padding cho các ô checkbox và header để dành không gian cho Habit */
+.sheet th:not(:first-child),
+.sheet td:not(:first-child) {
+  padding: 0.6rem 0.5rem;
 }

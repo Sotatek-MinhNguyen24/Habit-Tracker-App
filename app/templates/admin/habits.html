@@ -1,3 +1,4 @@
+{# app/templates/admin/habits.html #}
 {% extends "base.html" %}
 {% block title %}Admin – Habit Management{% endblock %}
 
@@ -12,6 +13,8 @@
         <th>Name</th>
         <th>Frequency</th>
         <th>Active</th>
+        <th>Streak</th>
+        <th>Last Completed</th>
         <th>Actions</th>
       </tr>
     </thead>
@@ -23,6 +26,20 @@
           <td>{{ habit.name }}</td>
           <td>{{ habit.frequency }}</td>
           <td>{{ "Yes" if habit.active else "No" }}</td>
+          <td>
+            {% if habit.current_streak > 0 %}
+              🔥 {{ habit.current_streak }}
+            {% else %}
+              –
+            {% endif %}
+          </td>
+          <td>
+            {% if habit.last_completed_date %}
+              {{ habit.last_completed_date.strftime('%Y-%m-%d') }}
+            {% else %}
+              –
+            {% endif %}
+          </td>
           <td>
             <form
               method="post"
@@ -38,7 +55,7 @@
       {% endfor %}
       {% if habits|length == 0 %}
         <tr>
-          <td colspan="6" class="no-data">No habits found.</td>
+          <td colspan="8" class="no-data">No habits found.</td>
         </tr>
       {% endif %}
     </tbody>

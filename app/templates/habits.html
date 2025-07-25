@@ -33,6 +33,7 @@
       <thead>
         <tr>
           <th>Habit</th>
+          <th>Streak</th>
           {% for d in header_daily %}
             <th>{{ ["T2","T3","T4","T5","T6","T7","CN"][loop.index0] }}</th>
           {% endfor %}
@@ -43,6 +44,13 @@
         {% for ctx in daily_habits %}
           <tr>
             <td>{{ ctx.habit.name }}</td>
+            <td>
+              {% if ctx.current_streak > 0 %}
+                🔥 {{ ctx.current_streak }}
+              {% else %}
+                –
+              {% endif %}
+            </td>
             {% for d in header_daily %}
               {% set key = d.isoformat() %}
               <td>
@@ -79,6 +87,7 @@
       <thead>
         <tr>
           <th>Habit</th>
+          <th>Streak</th>
           {% for d in header_monthly %}
             <th>{{ d.strftime("%b") }}</th>
           {% endfor %}
@@ -89,6 +98,13 @@
         {% for ctx in monthly_habits %}
           <tr>
             <td>{{ ctx.habit.name }}</td>
+            <td>
+              {% if ctx.current_streak > 0 %}
+                🔥 {{ ctx.current_streak }}
+              {% else %}
+                –
+              {% endif %}
+            </td>
             {% for d in header_monthly %}
               {% set key = d.isoformat() %}
               <td>
@@ -125,6 +141,7 @@
       <thead>
         <tr>
           <th>Habit</th>
+          <th>Streak</th>
           {% for d in header_yearly %}
             <th>{{ d.year }}</th>
           {% endfor %}
@@ -135,6 +152,13 @@
         {% for ctx in yearly_habits %}
           <tr>
             <td>{{ ctx.habit.name }}</td>
+            <td>
+              {% if ctx.current_streak > 0 %}
+                🔥 {{ ctx.current_streak }}
+              {% else %}
+                –
+              {% endif %}
+            </td>
             {% for d in header_yearly %}
               {% set key = d.isoformat() %}
               <td>

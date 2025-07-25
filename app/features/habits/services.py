@@ -1,5 +1,7 @@
+
 from typing import List
-from datetime import date
+from datetime import date, timedelta
+
 from fastapi import HTTPException, status
 from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -23,7 +25,8 @@ async def create_habit(db: AsyncSession, owner_id: int, data: HabitCreate) -> Ha
 
 async def toggle_habit(db: AsyncSession, habit_id: int, owner_id: int) -> Habit:
     res = await db.execute(
-        select(Habit).where(Habit.id == habit_id, Habit.owner_id == owner_id))
+        select(Habit).where(Habit.id == habit_id, Habit.owner_id == owner_id)
+    )
     habit = res.scalars().first()
     if not habit:
         raise HTTPException(
@@ -39,7 +42,8 @@ async def toggle_habit(db: AsyncSession, habit_id: int, owner_id: int) -> Habit:
 
 async def delete_habit(db: AsyncSession, habit_id: int, owner_id: int) -> None:
     res = await db.execute(
-        select(Habit).where(Habit.id == habit_id, Habit.owner_id == owner_id))
+        select(Habit).where(Habit.id == habit_id, Habit.owner_id == owner_id)
+    )
     habit = res.scalars().first()
     if not habit:
         raise HTTPException(
@@ -59,15 +63,47 @@ async def update_habit(db: AsyncSession, habit: Habit, data: HabitUpdate) -> Hab
     return habit
 
 
-# Hàm bật/tắt trạng thái tick, stmt :statement
-async def toggle_habit_log(db: AsyncSession, habit_id: int, on_date: date):
-    stmt = select(HabitLog).where(HabitLog.habit_id == habit_id, HabitLog.timestamp == on_date)
+async def toggle_habit_log(
+    db: AsyncSession,
+    habit_id: int,
+    owner_id: int,
+    on_date: date
+) -> Habit:
+
+    res = await db.execute(
+        select(Habit).where(Habit.id == habit_id, Habit.owner_id == owner_id)
+    )
+    habit = res.scalars().first()
+    if not habit:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Habit không tồn tại"
+        )
+
+    stmt = select(HabitLog).where(
+        HabitLog.habit_id == habit_id,
+        HabitLog.timestamp == on_date
+    )
     res = await db.execute(stmt)
     log = res.scalars().first()
 
     if log:
         await db.execute(delete(HabitLog).where(HabitLog.id == log.id))
+        habit.current_streak = 0
+        habit.last_completed_date = None
     else:
         db.add(HabitLog(habit_id=habit_id, timestamp=on_date))
 
+        yesterday = on_date - timedelta(days=1)
+        if habit.last_completed_date == yesterday:
+            habit.current_streak += 1
+        else:
+            habit.current_streak = 1
+
+        habit.last_completed_date = on_date
+
+    db.add(habit)
     await db.commit()
+    await db.refresh(habit)
+
+    return habit

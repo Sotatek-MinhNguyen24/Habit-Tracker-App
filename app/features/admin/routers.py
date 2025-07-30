@@ -33,6 +33,21 @@ async def admin_toggle_user_role(request: Request,
     await db.commit()
     return RedirectResponse(url=request.url_for("admin_list_users"),status_code=303)
 
+@router.post("/users/{user_id}/delete", name="admin_delete_user", status_code=303)
+async def admin_delete_user (request:Request, user_id: int, db:AsyncSession=Depends(get_db), current_admin: User = Depends(get_current_admin)):
+    if user_id == current_admin.id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Can not delete yourself")
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalars().first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not found")
+    if user.role == UserRole.admin:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Can not delete admin")
+    await db.delete(user)
+    await db.commit()
+
+    return RedirectResponse(url=request.url_for("admin_list_users"),status_code=303)
+
 @router.get("/habits", name="admin_list_habits")
 async def admin_list_habits(request: Request, db:AsyncSession = Depends(get_db), current_admin: User = Depends(get_current_admin)):
     res = await db.execute(select(Habit))
@@ -48,6 +63,8 @@ async def admin_delete_habits(request:Request, habit_id:int, db:AsyncSession = D
     await db.delete(habit)
     await db.commit()
     return RedirectResponse(url=request.url_for("admin_list_habits"), status_code=303)
+
+
 
 
 

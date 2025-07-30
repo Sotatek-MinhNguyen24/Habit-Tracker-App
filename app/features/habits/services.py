@@ -1,13 +1,40 @@
-
 from typing import List
 from datetime import date, timedelta
 
 from fastapi import HTTPException, status
 from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
+from dateutil.relativedelta import relativedelta
 
-from app.features.habits.models import Habit, HabitLog
+from app.features.habits.models import Habit, HabitLog, HabitFrequency
 from app.features.habits.schemas import HabitCreate, HabitUpdate
+
+
+def _update_streak(habit: Habit, on_date: date):
+    last = habit.last_completed_date
+    freq = habit.frequency
+
+    if freq == HabitFrequency.daily:
+        expected = on_date - timedelta(days=1)
+        habit.current_streak = habit.current_streak + 1 if last == expected else 1
+
+    elif freq == HabitFrequency.monthly:
+        if last:
+            expected = last + relativedelta(months=1)
+        else:
+            expected = None
+        is_consecutive = expected and (on_date.year, on_date.month) == (expected.year, expected.month)
+        habit.current_streak = habit.current_streak + 1 if is_consecutive else 1
+
+    elif freq == HabitFrequency.yearly:
+        if last:
+            expected = last.replace(year=last.year + 1)
+        else:
+            expected = None
+        is_consecutive = expected and (on_date.year == expected.year)
+        habit.current_streak = habit.current_streak + 1 if is_consecutive else 1
+
+    habit.last_completed_date = on_date
 
 
 async def list_habits(db: AsyncSession, owner_id: int) -> List[Habit]:
@@ -69,7 +96,6 @@ async def toggle_habit_log(
     owner_id: int,
     on_date: date
 ) -> Habit:
-
     res = await db.execute(
         select(Habit).where(Habit.id == habit_id, Habit.owner_id == owner_id)
     )
@@ -93,17 +119,9 @@ async def toggle_habit_log(
         habit.last_completed_date = None
     else:
         db.add(HabitLog(habit_id=habit_id, timestamp=on_date))
-
-        yesterday = on_date - timedelta(days=1)
-        if habit.last_completed_date == yesterday:
-            habit.current_streak += 1
-        else:
-            habit.current_streak = 1
-
-        habit.last_completed_date = on_date
+        _update_streak(habit, on_date)
 
     db.add(habit)
     await db.commit()
     await db.refresh(habit)
-
     return habit

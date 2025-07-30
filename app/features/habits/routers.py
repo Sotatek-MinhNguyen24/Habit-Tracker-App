@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.core.dependencies import get_current_active_user
 from app.features.users.models import User, UserRole
-from app.features.habits.models import Habit, HabitLog
+from app.features.habits.models import Habit, HabitLog, HabitFrequency
 from app.features.habits.schemas import HabitCreate, HabitUpdate
 from app.features.habits.services import (
     create_habit,
@@ -35,28 +35,41 @@ async def list_habits_route(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
 ):
-
-    stmt = select(Habit) if current_user.role == UserRole.admin else \
-           select(Habit).where(Habit.owner_id == current_user.id)
+    # Chọn habits theo role
+    stmt = (
+        select(Habit)
+        if current_user.role == UserRole.admin
+        else select(Habit).where(Habit.owner_id == current_user.id)
+    )
 
     res = await db.execute(stmt)
     habits = res.scalars().all()
 
-    header_daily = get_current_period("daily")
+    # Tạo các header date list
+    header_daily   = get_current_period("daily")
     header_monthly = get_current_period("monthly")
-    header_yearly = get_current_period("yearly")
+    header_yearly  = get_current_period("yearly")
+
+    header_map = {
+        HabitFrequency.daily:   header_daily,
+        HabitFrequency.monthly: header_monthly,
+        HabitFrequency.yearly:  header_yearly,
+    }
 
     daily_list, monthly_list, yearly_list = [], [], []
 
     for h in habits:
-        header = {
-            "daily": header_daily,
-            "monthly": header_monthly,
-            "yearly": header_yearly,
-        }[h.frequency]
+        # Lấy đúng header list
+        dates = header_map[h.frequency]
 
-
-        logs = (await db.execute(select(HabitLog).where(HabitLog.habit_id == h.id, HabitLog.timestamp.in_(header)))).scalars().all()
+        # Lọc logs trong khoảng dates
+        logs = (
+            await db.execute(
+                select(HabitLog)
+                .where(HabitLog.habit_id == h.id)
+                .where(HabitLog.timestamp.in_(dates))
+            )
+        ).scalars().all()
 
         checked = {log.timestamp.isoformat() for log in logs}
 
@@ -66,9 +79,10 @@ async def list_habits_route(
             "current_streak": h.current_streak,
         }
 
-        if h.frequency == "daily":
+        # Phân nhóm theo frequency enum
+        if h.frequency == HabitFrequency.daily:
             daily_list.append(ctx)
-        elif h.frequency == "monthly":
+        elif h.frequency == HabitFrequency.monthly:
             monthly_list.append(ctx)
         else:
             yearly_list.append(ctx)
@@ -81,9 +95,9 @@ async def list_habits_route(
             "header_daily": header_daily,
             "header_monthly": header_monthly,
             "header_yearly": header_yearly,
-            "daily_habits": daily_list,
+            "daily_habits":   daily_list,
             "monthly_habits": monthly_list,
-            "yearly_habits": yearly_list,
+            "yearly_habits":  yearly_list,
         },
     )
 

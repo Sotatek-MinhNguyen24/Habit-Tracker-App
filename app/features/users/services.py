@@ -5,7 +5,7 @@ from fastapi import HTTPException, status
 
 from app.core.security import get_password_hash, verify_password
 from app.features.users.models import User
-from app.features.users.schemas import UserCreate, PasswordUpdateRequest
+from app.features.users.schemas import UserCreate, PasswordUpdateRequest, UserProfileUpdate
 
 async def get_user_by_email(
     db: AsyncSession, email: str
@@ -31,7 +31,22 @@ async def create_user(
         email=data.email,
         full_name=data.full_name,
         hashed_password=get_password_hash(data.password),
+        phone=data.phone
     )
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
+    return user
+
+async def get_user_profile(db:AsyncSession, user_id:int) ->User:
+    user = await db.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="User not found")
+    return user
+
+async def update_user_profile(db:AsyncSession, user:User, data:UserProfileUpdate) -> User:
+    for field, value in data.model_dump(exclude_unset=True).items():
+        setattr(user,field,value)
     db.add(user)
     await db.commit()
     await db.refresh(user)

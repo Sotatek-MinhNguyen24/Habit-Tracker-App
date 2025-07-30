@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Profile{% endblock %}
+{% block content %}
+  <h2 class="title">Thông tin cá nhân</h2>
+  <form method="post"
+        action="{{ request.url_for('profile_update') }}"
+        class="profile-form form">
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" value="{{ current_user.email }}" disabled>
+    </div>
+
+    <div class="form-group">
+      <label for="full_name">Họ và tên</label>
+      <input id="full_name"
+             name="full_name"
+             type="text"
+             value="{{ current_user.full_name or '' }}">
+    </div>
+
+    <div class="form-group">
+      <label for="phone">Số điện thoại</label>
+      <input id="phone"
+             name="phone"
+             type="text"
+             value="{{ current_user.phone or '' }}">
+    </div>
+
+    <button class="btn" type="submit">Cập nhật</button>
+
+    <div class="links">
+      <a href="{{ request.url_for('change_password_page') }}">Đổi mật khẩu</a>
+    </div>
+  </form>
+{% endblock %}

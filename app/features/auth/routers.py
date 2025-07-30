@@ -30,9 +30,9 @@ async def login_submit(
     role = payload.get("role")
     redirect_to = "/admin/habits" if role == "admin" else "/habits"
     response = RedirectResponse(url=redirect_to, status_code=status.HTTP_302_FOUND)
-    response.set_cookie(key="access_token", value=access_token, httponly=True, secure=True, samesite="lax")
-    response.set_cookie(key="refresh_token", value=refresh_token, secure=True, samesite="lax")
-    response.set_cookie(key="user_role",value=payload.get("role", ""),secure=True,samesite="lax")
+    response.set_cookie(key="access_token", value=access_token, httponly=True, secure=False, samesite="lax")
+    response.set_cookie(key="refresh_token", value=refresh_token, secure=False, samesite="lax")
+    response.set_cookie(key="user_role",value=payload.get("role", ""),secure=False,samesite="lax")
     return response
 
 

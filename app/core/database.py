@@ -18,8 +18,8 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 # db_dependency = Annotated[AsyncSession, Depends(get_db)]
 
-@asynccontextmanager
-async def lifespan(app):
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    yield
+# @asynccontextmanager
+# async def lifespan(app):
+#     async with engine.begin() as conn:
+#         await conn.run_sync(Base.metadata.create_all)
+#     yield

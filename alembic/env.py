@@ -1,5 +1,5 @@
 from logging.config import fileConfig
-
+import os
 # Import create_engine (phiên bản đồng bộ)
 from sqlalchemy import create_engine
 from sqlalchemy import pool
@@ -66,8 +66,9 @@ def run_migrations_online() -> None:
     """
     # Lấy URL kết nối từ alembic.ini
     # Dòng này sẽ lấy URL đã được bạn cấu hình là URL đồng bộ trong alembic.ini
-    db_url = config.get_main_option("sqlalchemy.url")
-
+    db_url = os.getenv("ALEMBIC_DATABASE_URL", config.get_main_option("sqlalchemy.url"))
+    if not db_url:
+        raise Exception("Database URL for Alembic is not set. Please set ALEMBIC_DATABASE_URL or sqlalchemy.url in alembic.ini")
     # Tạo một SQLAlchemy Engine ĐỒNG BỘ
     # Đảm bảo rằng URL trong alembic.ini không phải là dạng 'postgresql+asyncpg'
     connectable = create_engine(

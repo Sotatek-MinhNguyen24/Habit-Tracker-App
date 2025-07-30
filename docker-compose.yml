@@ -1,0 +1,75 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: "postgresql+asyncpg://postgres:123@db:5432/HabitTrackerDatabase"
+
+  db:
+    image: postgres:17
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_DB: HabitTrackerDatabase
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+
+volumes:
+  postgres_data:
+
+
+
+
+
+
+# version: '3.8'
+
+# services:
+#   app:
+#     build: .
+#     ports:
+#       - "8000:8000"
+#     depends_on:
+#       - db
+
+#     environment:
+#       # URL cho ứng dụng FastAPI (sử dụng asyncpg)
+#       DATABASE_URL: "postgresql+asyncpg://postgres:123@db:5432/HabitTrackerDatabase"
+#       # URL riêng cho Alembic (sử dụng psycopg2 đồng bộ)
+#       # Alembic sẽ đọc biến môi trường này từ alembic/env.py
+#       ALEMBIC_DATABASE_URL: "postgresql://postgres:123@db:5432/HabitTrackerDatabase"
+    
+#     # Lệnh này sẽ chạy Alembic upgrade head trước, sau đó mới khởi động Uvicorn
+#     # Sử dụng `&&` để đảm bảo Uvicorn chỉ chạy nếu Alembic thành công
+#     command: >
+#       /bin/bash -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+    
+#     # Để theo dõi logs trong quá trình khởi động
+#     logging:
+#       driver: "json-file"
+#       options:
+#         max-size: "1m"
+#         max-file: "3"
+
+#   db:
+#     image: postgres:17
+#     volumes:
+#       - postgres_data:/var/lib/postgresql/data/
+#     environment:
+#       POSTGRES_DB: HabitTrackerDatabase
+#       POSTGRES_USER: postgres
+#       POSTGRES_PASSWORD: 123
+    
+#     # Healthcheck để Docker Compose biết khi nào DB thực sự sẵn sàng
+#     healthcheck:
+#       test: ["CMD-SHELL", "pg_isready -U postgres -d HabitTrackerDatabase -h localhost"] # Thêm -h localhost để đảm bảo kiểm tra kết nối cục bộ trong container db
+#       interval: 5s # Kiểm tra mỗi 5 giây
+#       timeout: 5s  # Timeout nếu không phản hồi trong 5 giây
+#       retries: 5   # Thử lại 5 lần trước khi báo lỗi
+#       start_period: 10s # Thời gian chờ ban đầu trước khi bắt đầu kiểm tra
+
+# volumes:
+#   postgres_data:

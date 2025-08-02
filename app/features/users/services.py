@@ -1,9 +1,9 @@
 from typing import Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, Request
 
-from app.core.security import get_password_hash, verify_password
+from app.core.security import get_password_hash, verify_password, decode_token
 from app.features.users.models import User
 from app.features.users.schemas import UserCreate, PasswordUpdateRequest, UserProfileUpdate
 
@@ -11,13 +11,14 @@ async def get_user_by_email(
     db: AsyncSession, email: str
 ) -> Optional[User]:
     res = await db.execute(select(User).where(User.email == email))
-    return res.scalars().first()
+    return res.scalar_one_or_none()
 
-async def get_user_by_id(
-    db: AsyncSession, user_id: int
-) -> Optional[User]:
-    res = await db.execute(select(User).where(User.id == user_id))
-    return res.scalars().first()
+
+async def get_current_user_id(request: Request) -> int:
+    token = request.cookies.get("access_token")
+    payload = decode_token(token)
+    return int(payload.get("sub"))
+
 
 async def create_user(
     db: AsyncSession, data: UserCreate
@@ -54,9 +55,7 @@ async def update_user_profile(db:AsyncSession, user:User, data:UserProfileUpdate
 
 async def update_user_password(db: AsyncSession, user_id: int, passwords: PasswordUpdateRequest) -> None:
     res = await db.execute(select(User).where(User.id == user_id))
-    user = res.scalars().first()
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Người dùng không tồn tại")
+    user = res.scalar_one_or_none()
 
     if not verify_password(passwords.old_password, user.hashed_password):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Mật khẩu cũ không đúng")
@@ -68,7 +67,7 @@ async def update_user_password(db: AsyncSession, user_id: int, passwords: Passwo
 
 async def set_user_password(db: AsyncSession,user_id: int,new_password: str) -> None:
     res = await db.execute(select(User).where(User.id == user_id))
-    user = res.scalars().first()
+    user = res.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="Người dùng không tồn tại")
     user.hashed_password = get_password_hash(new_password)

@@ -6,18 +6,13 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.security import decode_token
 from app.core.dependencies import get_current_active_user
 from app.features.users.schemas import UserCreate, PasswordUpdateRequest, UserProfileUpdate
-from app.features.users.services import create_user, update_user_password, update_user_profile, get_user_profile
+from app.features.users.services import create_user, update_user_password, update_user_profile, get_user_profile, get_current_user_id
 
 templates = Jinja2Templates(directory="app/templates")
 router = APIRouter(prefix="/users", tags=["users"])
 
-def get_current_user_id(request: Request) -> int:
-    token = request.cookies.get("access_token")
-    payload = decode_token(token)
-    return int(payload.get("sub"))
 
 @router.get("/register")
 async def register_page(request: Request):
@@ -39,7 +34,7 @@ async def profile_page(request:Request, user = Depends(get_current_active_user),
     return templates.TemplateResponse("profile.html", {"request":request, "current_user": current_user})
 
 
-@router.post("/profile", status_code=status.HTTP_303_SEE_OTHER)
+@router.put("/profile", status_code=status.HTTP_303_SEE_OTHER)
 async def profile_update(request: Request, full_name : Optional[str]=Form(None), phone: Optional[str]=Form(None),
                          db: AsyncSession = Depends(get_db), current_user = Depends(get_current_active_user)):
     data = UserProfileUpdate(full_name=full_name, phone=phone)
@@ -51,7 +46,7 @@ async def profile_update(request: Request, full_name : Optional[str]=Form(None),
 async def change_password_page(request: Request):
     return templates.TemplateResponse("change_password.html", {"request": request, "show_nav": False})
 
-@router.post("/change-password")
+@router.put("/change-password")
 async def change_password_submit(request: Request,
     old_password: str        = Form(...),
     new_password: str        = Form(...),
@@ -70,5 +65,5 @@ async def change_password_submit(request: Request,
         return templates.TemplateResponse("change_password.html",{"request": request,"error": e.detail},
             status_code=e.status_code
         )
-    response = RedirectResponse(url="/habits", status_code=status.HTTP_302_FOUND)
+    response = RedirectResponse(url="/habits", status_code=status.HTTP_303_SEE_OTHER)
     return response

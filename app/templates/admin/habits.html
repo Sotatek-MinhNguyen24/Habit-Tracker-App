@@ -12,7 +12,6 @@
         <th>Owner ID</th>
         <th>Name</th>
         <th>Frequency</th>
-        <th>Active</th>
         <th>Streak</th>
         <th>Last Completed</th>
         <th>Actions</th>
@@ -24,8 +23,7 @@
           <td>{{ habit.id }}</td>
           <td>{{ habit.owner_id }}</td>
           <td>{{ habit.name }}</td>
-          <td>{{ habit.frequency }}</td>
-          <td>{{ "Yes" if habit.active else "No" }}</td>
+          <td>{{ habit.frequency.value }}</td>
           <td>
             {% if habit.current_streak > 0 %}
               🔥 {{ habit.current_streak }}
@@ -41,10 +39,8 @@
             {% endif %}
           </td>
           <td>
-            <form
-              method="post"
-              action="{{ request.url_for('admin_delete_habits', habit_id=habit.id) }}"
-              class="inline-form"
+            <form data-method="DELETE" data-url="{{request.url_for('admin_delete_habits', habit_id=habit.id)}}" data-redirect="{{request.url_for('admin_list_habits')}}"
+                  data-confirm="Do you want to delete habit"
             >
               <button class="btn-sm btn-delete" type="submit">
                 Delete

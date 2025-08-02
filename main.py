@@ -1,3 +1,5 @@
+import logging
+import subprocess
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
@@ -5,8 +7,6 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from app.core.database import AsyncSessionLocal, engine,Base
 from app.core.initial_data import create_admin_if_not_exists
-from app.features.users import models
-from app.features.habits import models
 from app.features.auth.routers import router as auth_router
 from app.features.password_reset.routers import router as pr_router
 from app.features.users.routers import router as users_router
@@ -15,8 +15,16 @@ from app.features.admin.routers import router as admin_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    # async with engine.begin() as conn:
+    #     await conn.run_sync(Base.metadata.create_all)
+
+    try:
+        logging.info("📦 Running Alembic migration: upgrade head...")
+        subprocess.run(["alembic", "upgrade", "head"], check=True)
+        logging.info("✅ Alembic migrations applied.")
+    except subprocess.CalledProcessError as e:
+        logging.error(f"❌ Alembic migration failed: {e}")
+        raise
 
     async with AsyncSessionLocal() as session:
         await create_admin_if_not_exists(session)

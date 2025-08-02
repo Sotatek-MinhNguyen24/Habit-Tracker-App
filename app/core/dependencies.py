@@ -18,7 +18,7 @@ async def get_current_user(request: Request,db: AsyncSession = Depends(get_db)) 
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="Invalid token payload")
 
     res = await db.execute(select(User).where(User.id == int(user_id)))
-    user = res.scalars().first()
+    user = res.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="User not found")
 

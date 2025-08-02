@@ -125,9 +125,8 @@ async def edit_habit_page(
     current_user: User = Depends(get_current_active_user),
 ):
     res = await db.execute(select(Habit).where(Habit.id == habit_id))
-    habit = res.scalars().first()
-    if not habit:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Habit not found")
+    habit = res.scalar_one_or_none()
+
     _assert_owner_or_admin(habit, current_user)
 
     return templates.TemplateResponse(
@@ -136,7 +135,7 @@ async def edit_habit_page(
     )
 
 
-@router.post("/{habit_id}/edit", status_code=status.HTTP_303_SEE_OTHER)
+@router.put("/{habit_id}/edit", name="edit_habit_submit" ,status_code=status.HTTP_303_SEE_OTHER)
 async def edit_habit_submit(
     request: Request,
     habit_id: int,
@@ -147,20 +146,15 @@ async def edit_habit_submit(
     current_user: User = Depends(get_current_active_user),
 ):
     res = await db.execute(select(Habit).where(Habit.id == habit_id))
-    habit = res.scalars().first()
-    if not habit:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Habit not found")
+    habit = res.scalar_one_or_none()
+
     _assert_owner_or_admin(habit, current_user)
 
-    await update_habit(
-        db,
-        habit,
-        data=HabitUpdate(name=name, description=description, frequency=frequency),
-    )
+    await update_habit(db,habit,data=HabitUpdate(name=name, description=description, frequency=frequency))
     return RedirectResponse(request.url_for("list_habits"), status_code=status.HTTP_303_SEE_OTHER)
 
 
-@router.post("/{habit_id}/toggle", status_code=status.HTTP_303_SEE_OTHER)
+@router.put("/{habit_id}/toggle", status_code=status.HTTP_303_SEE_OTHER)
 async def toggle_active_route(
     request: Request,
     habit_id: int,
@@ -168,16 +162,15 @@ async def toggle_active_route(
     current_user: User = Depends(get_current_active_user),
 ):
     res = await db.execute(select(Habit).where(Habit.id == habit_id))
-    habit = res.scalars().first()
-    if not habit:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Habit not found")
+    habit = res.scalar_one_or_none()
+
     _assert_owner_or_admin(habit, current_user)
 
     await toggle_habit(db, habit_id, current_user.id)
     return RedirectResponse(request.url_for("list_habits"), status_code=status.HTTP_303_SEE_OTHER)
 
 
-@router.post("/{habit_id}/delete", status_code=status.HTTP_303_SEE_OTHER)
+@router.delete("/{habit_id}/delete", status_code=status.HTTP_303_SEE_OTHER)
 async def delete_route(
     request: Request,
     habit_id: int,
@@ -185,9 +178,8 @@ async def delete_route(
     current_user: User = Depends(get_current_active_user),
 ):
     res = await db.execute(select(Habit).where(Habit.id == habit_id))
-    habit = res.scalars().first()
-    if not habit:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Habit not found")
+    habit = res.scalar_one_or_none()
+
     _assert_owner_or_admin(habit, current_user)
 
     await delete_habit(db, habit_id, current_user.id)
@@ -203,7 +195,7 @@ async def check_habit_route(
     current_user: User = Depends(get_current_active_user),
 ):
     res = await db.execute(select(Habit).where(Habit.id == habit_id))
-    habit = res.scalars().first()
+    habit = res.scalar_one_or_none()
     if not habit:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Habit not found")
     _assert_owner_or_admin(habit, current_user)

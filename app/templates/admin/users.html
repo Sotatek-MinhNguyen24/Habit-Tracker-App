@@ -27,12 +27,15 @@
 <!--          <td>{{ "Yes" if user.is_active else "No" }}</td>-->
           <td class="actions">
             {% if user.id != current_user.id %}
-              <form method="post"
-                    action="{{ url_for('admin_toggle_user_role', user_id=user.id) }}"
-                    class="inline-form">
+             <a href="{{ request.url_for('admin_edit_user_form', user_id=user.id) }}"
+                class="btn-sm btn-edit">
+                Edit
+              </a>
+              <form data-method="PUT" data-url="{{request.url_for('admin_toggle_user_role', user_id=user.id)}}" data-redirect="{{request.url_for('admin_list_users')}}"
+                    data-confirm="Do you want to change role">
             {% if user.role.value == 'admin' %}
               <button class="btn-sm btn-delete" type="submit">
-                Demote to User
+                Demote
               </button>
             {% else %}
               <button class="btn-sm btn" type="submit">
@@ -41,10 +44,7 @@
             {% endif %}
               </form>
 
-              <form method="post"
-                    action="{{ url_for('admin_delete_user', user_id=user.id) }}"
-                    class="inline-form"
-                    onsubmit="return confirm('Bạn có chắc muốn xóa người dùng này?');">
+              <form data-method="DELETE" data-url="{{request.url_for('admin_delete_user', user_id=user.id)}}" data-redirect="{{request.url_for('admin_list_users')}}" data-confirm="Do you want to delete user" >
                <button class="btn-sm btn-delete" type="submit">
                   Delete
                 </button>

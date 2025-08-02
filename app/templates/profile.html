@@ -2,8 +2,9 @@
 {% block title %}Profile{% endblock %}
 {% block content %}
   <h2 class="title">Thông tin cá nhân</h2>
-  <form method="post"
-        action="{{ request.url_for('profile_update') }}"
+  <form data-method="PUT"
+        data_url="{{ request.url_for('profile_update') }}"
+        data-redirect="{{request.url_for('profile_page')}}"
         class="profile-form form">
     <div class="form-group">
       <label>Email</label>

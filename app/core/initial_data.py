@@ -14,7 +14,7 @@ async def create_admin_if_not_exists(db:AsyncSession = Depends(get_db)):
     if not email and not password:
         return
     res = await db.execute(select(User).where(User.email == email))
-    existing = res.scalars().first()
+    existing = res.scalar_one_or_none()
     if existing:
         return
 

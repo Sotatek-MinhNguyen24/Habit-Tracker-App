@@ -33,7 +33,7 @@ async def reset_page(request: Request, token: str):
     return templates.TemplateResponse("reset_password.html", {"request": request, "token": token, "show_nav": False})
 
 
-@router.post("/reset-password")
+@router.put("/reset-password")
 async def reset_submit(request: Request, token: str = Form(...), new_password: str = Form(...),
                        confirm_password: str = Form(...), db: AsyncSession = Depends(get_db), ):
     if new_password != confirm_password:
@@ -42,9 +42,7 @@ async def reset_submit(request: Request, token: str = Form(...), new_password: s
             "token": token,
             "error": "Xác nhận mật khẩu không khớp",
             "show_nav": False
-        },
-                                          status_code=status.HTTP_400_BAD_REQUEST
-                                          )
+        },status_code=status.HTTP_400_BAD_REQUEST)
 
     try:
         await reset_password(db, token, new_password)
@@ -59,4 +57,4 @@ async def reset_submit(request: Request, token: str = Form(...), new_password: s
             status_code=e.status_code
         )
 
-    return RedirectResponse(url="/auth/login", status_code=status.HTTP_302_FOUND)
+    return RedirectResponse(url="/auth/login", status_code=status.HTTP_303_SEE_OTHER)

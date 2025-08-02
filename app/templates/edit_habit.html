@@ -7,7 +7,8 @@
     <p>🔥 Streak hiện tại: {{ habit.current_streak }} ngày liên tục</p>
   {% endif %}
 
-  <form method="post" action="/habits/{{ habit.id }}/edit">
+  <form data-method="PUT" data-url="{{request.url_for('edit_habit_submit', habit_id=habit.id)}}" data-redirect="{{request.url_for('list_habits')}}"
+        data-confirm="Do you want to change">
     <div class="form-group">
       <label for="name">Tên habit</label>
       <input id="name" name="name" type="text" value="{{ habit.name }}" required>
@@ -19,9 +20,9 @@
     <div class="form-group">
       <label for="frequency">Tần suất</label>
       <select id="frequency" name="frequency">
-        <option value="daily"   {% if habit.frequency=="daily"   %}selected{% endif %}>Hàng ngày</option>
-        <option value="monthly" {% if habit.frequency=="monthly" %}selected{% endif %}>Hàng tháng</option>
-        <option value="yearly"  {% if habit.frequency=="yearly"  %}selected{% endif %}>Hàng năm</option>
+        <option value="daily"   {% if habit.frequency.value=="daily"   %}selected{% endif %}>Hàng ngày</option>
+        <option value="monthly" {% if habit.frequency.value=="monthly" %}selected{% endif %}>Hàng tháng</option>
+        <option value="yearly"  {% if habit.frequency.value=="yearly"  %}selected{% endif %}>Hàng năm</option>
       </select>
     </div>
     <button class="btn" type="submit">Cập nhật</button>
